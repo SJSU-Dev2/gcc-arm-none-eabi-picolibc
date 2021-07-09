@@ -1,3 +1,14 @@
+/*
+Copyright (C) 1991 DJ Delorie
+All rights reserved.
+
+Redistribution, modification, and use in source and binary forms is permitted
+provided that the above copyright notice and following paragraph are
+duplicated in all such forms.
+
+This file is distributed WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
 
 _BEGIN_STD_C
 
@@ -374,6 +385,17 @@ _BEGIN_STD_C
 #define _JBLEN ((4*sizeof(long))/sizeof(long))
 #else
 #define _JBLEN ((14*sizeof(long) + 12*sizeof(double))/sizeof(long))
+#endif
+#endif
+
+#ifdef __CSKYABIV2__
+#define _JBTYPE unsigned long
+#if defined(__CK801__)
+#define _JBLEN 7
+#elif defined(__CK802__)
+#define _JBLEN 10
+#else
+#define _JBLEN 18
 #endif
 #endif
 

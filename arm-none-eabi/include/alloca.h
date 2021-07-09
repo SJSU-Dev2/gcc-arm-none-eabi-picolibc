@@ -1,6 +1,6 @@
 /* libc/include/alloca.h - Allocate memory on stack */
 
-/* Written 2000 by Werner Almesberger */
+/* Copyright (c) 2000 Werner Almesberger */
 /* Rearranged for general inclusion by stdlib.h.
    2001, Corinna Vinschen <vinschen@redhat.com> */
 
@@ -8,7 +8,6 @@
 #define _NEWLIB_ALLOCA_H
 
 #include "_ansi.h"
-#include <sys/reent.h>
 
 #undef alloca
 
