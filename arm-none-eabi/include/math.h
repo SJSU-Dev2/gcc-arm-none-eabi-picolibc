@@ -1,10 +1,42 @@
+/*
+Copyright (c) 1991, 1993
+The Regents of the University of California.  All rights reserved.
+c) UNIX System Laboratories, Inc.
+All or some portions of this file are derived from material licensed
+to the University of California by American Telephone and Telegraph
+Co. or Unix System Laboratories, Inc. and are reproduced herein with
+the permission of UNIX System Laboratories, Inc.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the University nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
 #ifndef  _MATH_H_
 
 #define  _MATH_H_
 
-#include <sys/reent.h>
 #include <sys/cdefs.h>
-#include <machine/ieeefp.h>
+#include <ieeefp.h>
 #include "_ansi.h"
 
 _BEGIN_STD_C
@@ -12,7 +44,7 @@ _BEGIN_STD_C
 /* Natural log of 2 */
 #define _M_LN2        0.693147180559945309417
 
-#if __GNUC_PREREQ (3, 3)
+#if __GNUC_PREREQ (3, 3) || defined(__clang__) || defined(__COMPCERT__)
  /* gcc >= 3.3 implicitly defines builtins for HUGE_VALx values.  */
 
 # ifndef HUGE_VAL
@@ -117,10 +149,10 @@ extern double fmod (double, double);
 #if __MISC_VISIBLE
 extern int finite (double);
 extern int finitef (float);
-extern int finitel (long double);
 extern int isinff (float);
 extern int isnanf (float);
-#ifdef __CYGWIN__ /* not implemented in newlib yet */
+#if defined(_HAVE_LONG_DOUBLE)
+extern int finitel (long double);
 extern int isinfl (long double);
 extern int isnanl (long double);
 #endif
@@ -188,17 +220,27 @@ extern int isnan (double);
 # define MATH_ERREXCEPT 2
 #endif
 #ifndef math_errhandling
-# define math_errhandling MATH_ERRNO
+# ifdef _IEEE_LIBM
+#  define _MATH_ERRHANDLING_ERRNO 0
+# else
+#  define _MATH_ERRHANDLING_ERRNO MATH_ERRNO
+# endif
+# ifdef _SUPPORTS_ERREXCEPT
+#  define _MATH_ERRHANDLING_ERREXCEPT MATH_ERREXCEPT
+# else
+#  define _MATH_ERRHANDLING_ERREXCEPT 0
+# endif
+# define math_errhandling (_MATH_ERRHANDLING_ERRNO | _MATH_ERRHANDLING_ERREXCEPT)
 #endif
 
-extern int __isinff (float x);
-extern int __isinfd (double x);
-extern int __isnanf (float x);
-extern int __isnand (double x);
-extern int __fpclassifyf (float x);
-extern int __fpclassifyd (double x);
-extern int __signbitf (float x);
-extern int __signbitd (double x);
+extern int __isinff (float);
+extern int __isinfd (double);
+extern int __isnanf (float);
+extern int __isnand (double);
+extern int __fpclassifyf (float);
+extern int __fpclassifyd (double);
+extern int __signbitf (float);
+extern int __signbitd (double);
 
 /* Note: isinf and isnan were once functions in newlib that took double
  *       arguments.  C99 specifies that these names are reserved for macros
@@ -207,7 +249,7 @@ extern int __signbitd (double x);
  *       taking double arguments still exist for compatibility purposes
  *       (prototypes for them are earlier in this header).  */
 
-#if __GNUC_PREREQ (4, 4)
+#if __GNUC_PREREQ (4, 4) || defined(__clang__)
   #define fpclassify(__x) (__builtin_fpclassify (FP_NAN, FP_INFINITE, \
 						 FP_NORMAL, FP_SUBNORMAL, \
 						 FP_ZERO, __x))
@@ -224,7 +266,7 @@ extern int __signbitd (double x);
 #else
   #define fpclassify(__x) \
 	  ((sizeof(__x) == sizeof(float))  ? __fpclassifyf(__x) : \
-	  __fpclassifyd(__x))
+	  __fpclassifyd((double) (__x)))
   #ifndef isfinite
     #define isfinite(__y) \
 	    (__extension__ ({int __cy = fpclassify(__y); \
@@ -239,21 +281,42 @@ extern int __signbitd (double x);
   #define isnormal(__x) (fpclassify(__x) == FP_NORMAL)
 #endif
 
+#ifndef issignaling
+int __issignalingf(float f);
+int __issignaling(double d);
+
+#if defined(_HAVE_LONG_DOUBLE)
+int __issignalingl(long double d);
+#define issignaling(__x)						\
+	((sizeof(__x) == sizeof(float))  ? __issignalingf(__x) :	\
+	 (sizeof(__x) == sizeof(double)) ? __issignaling ((double) (__x)) :	\
+	 __issignalingl((long double) (__x)))
+#else
+#ifdef _DOUBLE_IS_32BITS
+#define issignaling(__x) __issignalingf((float) (__x))
+#else
+#define issignaling(__x)						\
+	((sizeof(__x) == sizeof(float))  ? __issignalingf(__x) :	\
+	 __issignaling ((double) (__x)))
+#endif /* _DOUBLE_IS_32BITS */
+#endif /* _HAVE_LONG_DOUBLE */
+#endif
+
 #if __GNUC_PREREQ (4, 0)
   #if defined(_HAVE_LONG_DOUBLE)
-    #define signbit(__x) \
-	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) : \
-	     (sizeof(__x) == sizeof(double)) ? __builtin_signbit (__x) : \
-					       __builtin_signbitl(__x))
+    #define signbit(__x)							\
+	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) :	\
+	     ((sizeof(__x) == sizeof(double)) ? __builtin_signbit ((double)(__x)) : \
+	      __builtin_signbitl((long double)(__x))))
   #else
-    #define signbit(__x) \
-	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) : \
-					       __builtin_signbit (__x))
+    #define signbit(__x)							\
+	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) :	\
+	     __builtin_signbit ((double) (__x)))
   #endif
 #else
   #define signbit(__x) \
 	  ((sizeof(__x) == sizeof(float))  ?  __signbitf(__x) : \
-		  __signbitd(__x))
+	                              __signbitd((double) (__x)))
 #endif
 
 #if __GNUC_PREREQ (2, 97)
@@ -427,7 +490,6 @@ extern long double tanhl (long double);
 extern long double frexpl (long double, int *);
 extern long double modfl (long double, long double *);
 extern long double ceill (long double);
-extern long double fabsl (long double);
 extern long double floorl (long double);
 extern long double log1pl (long double);
 extern long double expm1l (long double);
@@ -450,7 +512,6 @@ extern long double fmodl (long double, long double);
 extern long double hypotl (long double, long double);
 #endif /* ! defined (__math_68881) */
 #endif /* ! defined (_REENT_ONLY) */
-extern long double copysignl (long double, long double);
 extern long double nanl (const char *);
 extern int ilogbl (long double);
 extern long double asinhl (long double);
@@ -499,15 +560,19 @@ extern long long int llrintl (_LONG_DOUBLE);
 
 #endif /* __ISO_C_VISIBLE >= 1999 */
 
+#ifdef _HAVE_LONG_DOUBLE
+/* Compiler provides these */
+extern long double fabsl (long double);
+extern long double copysignl (long double, long double);
+#endif
+
 #if __MISC_VISIBLE
 extern double drem (double, double);
 extern float dremf (float, float);
-#ifdef __CYGWIN__
-extern float dreml (long double, long double);
-#endif /* __CYGWIN__ */
-extern double gamma_r (double, int *);
+#if defined(_LDBL_EQ_DBL) || defined(__CYGWIN__)
+extern long double dreml (long double, long double);
+#endif
 extern double lgamma_r (double, int *);
-extern float gammaf_r (float, int *);
 extern float lgammaf_r (float, int *);
 #endif
 
@@ -533,9 +598,9 @@ extern float jnf (int, float);
 #if __GNU_VISIBLE
 extern void sincos (double, double *, double *);
 extern void sincosf (float, float *, float *);
-#ifdef __CYGWIN__
+#if defined (_LDBL_EQ_DBL) || defined (__CYGWIN__)
 extern void sincosl (long double, long double *, long double *);
-#endif /* __CYGWIN__ */
+#endif
 # ifndef exp10
 extern double exp10 (double);
 # endif
@@ -548,24 +613,18 @@ extern float exp10f (float);
 # ifndef pow10f
 extern float pow10f (float);
 # endif
-#ifdef __CYGWIN__
+#if defined (_LDBL_EQ_DBL) || defined (__CYGWIN__)
 # ifndef exp10l
-extern float exp10l (float);
+extern long double exp10l (long double);
 # endif
 # ifndef pow10l
-extern float pow10l (float);
+extern long double pow10l (long double);
 # endif
-#endif /* __CYGWIN__ */
+#endif
 #endif /* __GNU_VISIBLE */
 
 #if __MISC_VISIBLE || __XSI_VISIBLE
-/* The gamma functions use a global variable, signgam.  */
-#ifndef _REENT_ONLY
-#define signgam (*__signgam())
-extern int *__signgam (void);
-#endif /* ! defined (_REENT_ONLY) */
-
-#define __signgam_r(ptr) _REENT_SIGNGAM(ptr)
+extern NEWLIB_THREAD_LOCAL int signgam;
 #endif /* __MISC_VISIBLE || __XSI_VISIBLE */
 
 /* Useful constants.  */
@@ -602,23 +661,9 @@ extern int *__signgam (void);
 #define M_LOG2_E        _M_LN2
 #define M_INVLN2        1.4426950408889633870E0  /* 1 / log(2) */
 
-/* Global control over fdlibm error handling.  */
-
-enum __fdlibm_version
-{
-  __fdlibm_ieee = -1,
-  __fdlibm_posix
-};
-
-#define _LIB_VERSION_TYPE enum __fdlibm_version
-#define _LIB_VERSION __fdlib_version
-
-extern __IMPORT _LIB_VERSION_TYPE _LIB_VERSION;
-
-#define _IEEE_  __fdlibm_ieee
-#define _POSIX_ __fdlibm_posix
-
 #endif /* __BSD_VISIBLE */
+
+#include <machine/math.h>
 
 _END_STD_C
 

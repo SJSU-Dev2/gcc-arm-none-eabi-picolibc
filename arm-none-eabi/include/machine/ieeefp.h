@@ -1,4 +1,16 @@
+/*
+Copyright (C) 1991 DJ Delorie
+All rights reserved.
+
+Redistribution, modification, and use in source and binary forms is permitted
+provided that the above copyright notice and following paragraph are
+duplicated in all such forms.
+
+This file is distributed WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
 #ifndef __IEEE_BIG_ENDIAN
+#include <picolibc.h>
 #ifndef __IEEE_LITTLE_ENDIAN
 
 /* This file can define macros to choose variations of the IEEE float
@@ -72,20 +84,25 @@
    byte ordering was big or little endian depending upon the target.
    Modern floating-point formats are naturally ordered; in this case
    __VFP_FP__ will be defined, even if soft-float.  */
-#ifdef __VFP_FP__
+#if defined(__VFP_FP__) || defined(__SOFTFP__)
 # ifdef __ARMEL__
 #  define __IEEE_LITTLE_ENDIAN
 # else
 #  define __IEEE_BIG_ENDIAN
 # endif
 # if __ARM_FP & 0x8
-#  define __OBSOLETE_MATH_DEFAULT 0
+#  define __OBSOLETE_MATH_DEFAULT_FLOAT 0
+# else
+#  define __OBSOLETE_MATH_DEFAULT_FLOAT 1
 # endif
 #else
 # define __IEEE_BIG_ENDIAN
 # ifdef __ARMEL__
 #  define __IEEE_BYTES_LITTLE_ENDIAN
 # endif
+#endif
+#ifndef __SOFTFP__
+# define _SUPPORTS_ERREXCEPT
 #endif
 #endif
 
@@ -95,7 +112,10 @@
 #else
 #define __IEEE_BIG_ENDIAN
 #endif
-#define __OBSOLETE_MATH_DEFAULT 0
+#define __OBSOLETE_MATH_DEFAULT_FLOAT 0
+#ifdef __ARM_FP
+# define _SUPPORTS_ERREXCEPT
+#endif
 #endif
 
 #ifdef __epiphany__
@@ -189,10 +209,23 @@
 
 #ifdef __i386__
 #define __IEEE_LITTLE_ENDIAN
+# define _SUPPORTS_ERREXCEPT
 #endif
 
 #ifdef __riscv
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define __IEEE_BIG_ENDIAN
+#else
 #define __IEEE_LITTLE_ENDIAN
+#endif
+#ifdef __riscv_flen
+# define _SUPPORTS_ERREXCEPT
+#endif
+#if __riscv_flen >= 64
+# define __OBSOLETE_MATH_DEFAULT_FLOAT 0
+#else
+# define __OBSOLETE_MATH_DEFAULT_FLOAT 1
+#endif
 #endif
 
 #ifdef __i960__
@@ -308,6 +341,14 @@
 #define __IEEE_LITTLE_ENDIAN
 #endif
 
+#ifdef __CSKY__
+#ifdef __CSKYBE__
+#define __IEEE_BIG_ENDIAN
+#else
+#define __IEEE_LITTLE_ENDIAN
+#endif
+#endif
+
 #ifdef __fr30__
 #define __IEEE_BIG_ENDIAN
 #endif
@@ -386,6 +427,7 @@
 
 #ifdef __x86_64__
 #define __IEEE_LITTLE_ENDIAN
+# define _SUPPORTS_ERREXCEPT
 #endif
 
 #ifdef __mep__
@@ -456,6 +498,14 @@
 #define __IEEE_BIG_ENDIAN
 #endif
 
+#if (defined(__XTENSA__))
+#ifdef __XTENSA_EB__
+#define __IEEE_BIG_ENDIAN
+#else
+#define __IEEE_LITTLE_ENDIAN
+#endif
+#endif
+
 #ifdef __AMDGCN__
 #define __IEEE_LITTLE_ENDIAN
 #endif
@@ -468,12 +518,38 @@
 #define __OBSOLETE_MATH_DEFAULT 0
 #endif
 
+#ifndef __OBSOLETE_MATH_DEFAULT_FLOAT
+# ifdef __OBSOLETE_MATH_DEFAULT
+#  define __OBSOLETE_MATH_DEFAULT_FLOAT __OBSOLETE_MATH_DEFAULT
+# else
+/* Use old math code by default for single-precision functions.  */
+#  define __OBSOLETE_MATH_DEFAULT_FLOAT 1
+# endif
+#endif
+
+#ifndef __OBSOLETETE_MATH_DEFAULT_DOUBLE
+# ifdef __OBSOLETE_MATH_DEFAULT
+#  define __OBSOLETE_MATH_DEFAULT_DOUBLE __OBSOLETE_MATH_DEFAULT
+# else
+/* Use new math code by default for double-precision functions. */
+#  define __OBSOLETE_MATH_DEFAULT_DOUBLE 0
+# endif
+#endif
+
 #ifndef __OBSOLETE_MATH_DEFAULT
 /* Use old math code by default.  */
 #define __OBSOLETE_MATH_DEFAULT 1
 #endif
 #ifndef __OBSOLETE_MATH
 #define __OBSOLETE_MATH __OBSOLETE_MATH_DEFAULT
+#endif
+
+#ifndef __OBSOLETE_MATH_FLOAT
+#define __OBSOLETE_MATH_FLOAT __OBSOLETE_MATH_DEFAULT_FLOAT
+#endif
+
+#ifndef __OBSOLETE_MATH_DOUBLE
+#define __OBSOLETE_MATH_DOUBLE __OBSOLETE_MATH_DEFAULT_DOUBLE
 #endif
 
 #ifndef __IEEE_BIG_ENDIAN

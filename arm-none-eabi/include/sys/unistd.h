@@ -1,3 +1,31 @@
+/*
+Copyright (c) 1982, 1986, 1993
+The Regents of the University of California.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the University nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
 #ifndef _SYS_UNISTD_H
 #define _SYS_UNISTD_H
 
@@ -262,20 +290,20 @@ pid_t   vfork (void);
 #ifdef _COMPILING_NEWLIB
 /* Provide prototypes for most of the _<systemcall> names that are
    provided in newlib for some compilers.  */
-int     _close (int __fildes);
-pid_t   _fork (void);
-pid_t   _getpid (void);
-int	_isatty (int __fildes);
-int     _link (const char *__path1, const char *__path2);
-_off_t   _lseek (int __fildes, _off_t __offset, int __whence);
+int     close (int __fildes);
+pid_t   fork (void);
+pid_t   getpid (void);
+int	isatty (int __fildes);
+int     link (const char *__path1, const char *__path2);
+_off_t  lseek (int __fildes, _off_t __offset, int __whence);
 #ifdef __LARGE64_FILES
-_off64_t _lseek64 (int __filedes, _off64_t __offset, int __whence);
+_off64_t lseek64 (int __filedes, _off64_t __offset, int __whence);
 #endif
 _READ_WRITE_RETURN_TYPE _read (int __fd, void *__buf, size_t __nbyte);
-void *  _sbrk (ptrdiff_t __incr);
-int     _unlink (const char *__path);
+void *  sbrk (ptrdiff_t __incr);
+int     unlink (const char *__path);
 _READ_WRITE_RETURN_TYPE _write (int __fd, const void *__buf, size_t __nbyte);
-int     _execve (const char *__path, char * const __argv[], char * const __envp[]);
+int     execve (const char *__path, char * const __argv[], char * const __envp[]);
 #endif
 
 #if !defined(__INSIDE_CYGWIN__)
@@ -533,7 +561,8 @@ int	unlinkat (int, const char *, int);
  *  confstr values per IEEE Std 1003.1, 2004 Edition
  */
 
-#ifdef __CYGWIN__	/* Only defined on Cygwin for now. */
+/* Only defined on Cygwin and RTEMS for now. */
+#if defined (__CYGWIN__) || defined(__rtems__)
 #define _CS_PATH                               0
 #define _CS_POSIX_V7_ILP32_OFF32_CFLAGS        1
 #define _CS_POSIX_V6_ILP32_OFF32_CFLAGS       _CS_POSIX_V7_ILP32_OFF32_CFLAGS
