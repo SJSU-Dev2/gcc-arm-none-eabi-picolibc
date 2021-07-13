@@ -348,10 +348,10 @@
 #define _NEWLIB__ 4
 
 /* The Picolibc minor version number. */
-#define _PICOLIBC_MINOR__ 6
+#define _PICOLIBC_MINOR__ 7
 
 /* The Picolibc version in string format. */
-#define _PICOLIBC_VERSION "1.6.2"
+#define _PICOLIBC_VERSION "1.7.1"
 
 /* The Picolibc major version number. */
 #define _PICOLIBC__ 1
@@ -393,7 +393,7 @@
 #undef __OBSOLETE_MATH_FLOAT
 
 /* The Picolibc patch level. */
-#define __PICOLIBC_PATCHLEVEL__ 2
+#define __PICOLIBC_PATCHLEVEL__ 1
 
 #undef __SINGLE_THREAD__
 
