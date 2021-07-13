@@ -1,3 +1,36 @@
+/*
+Copyright (c) 1991, 1993
+The Regents of the University of California.  All rights reserved.
+c) UNIX System Laboratories, Inc.
+All or some portions of this file are derived from material licensed
+to the University of California by American Telephone and Telegraph
+Co. or Unix System Laboratories, Inc. and are reproduced herein with
+the permission of UNIX System Laboratories, Inc.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the University nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
 #ifndef _IEEE_FP_H_
 #define _IEEE_FP_H_
 
@@ -5,143 +38,9 @@
 
 #include <machine/ieeefp.h>
 #include <float.h>
+#include <stdint.h>
 
 _BEGIN_STD_C
-
-/* FIXME FIXME FIXME:
-   Neither of __ieee_{float,double}_shape_type seem to be used anywhere
-   except in libm/test.  If that is the case, please delete these from here.
-   If that is not the case, please insert documentation here describing why
-   they're needed.  */
-
-#ifdef __IEEE_BIG_ENDIAN
-
-typedef union 
-{
-  double value;
-  struct 
-  {
-    unsigned int sign : 1;
-    unsigned int exponent: 11;
-    unsigned int fraction0:4;
-    unsigned int fraction1:16;
-    unsigned int fraction2:16;
-    unsigned int fraction3:16;
-    
-  } number;
-  struct 
-  {
-    unsigned int sign : 1;
-    unsigned int exponent: 11;
-    unsigned int quiet:1;
-    unsigned int function0:3;
-    unsigned int function1:16;
-    unsigned int function2:16;
-    unsigned int function3:16;
-  } nan;
-  struct 
-  {
-    unsigned long msw;
-    unsigned long lsw;
-  } parts;
-    long aslong[2];
-} __ieee_double_shape_type;
-
-#elif defined __IEEE_LITTLE_ENDIAN
-
-typedef union 
-{
-  double value;
-  struct 
-  {
-#ifdef __SMALL_BITFIELDS
-    unsigned int fraction3:16;
-    unsigned int fraction2:16;
-    unsigned int fraction1:16;
-    unsigned int fraction0: 4;
-#else
-    unsigned int fraction1:32;
-    unsigned int fraction0:20;
-#endif
-    unsigned int exponent :11;
-    unsigned int sign     : 1;
-  } number;
-  struct 
-  {
-#ifdef __SMALL_BITFIELDS
-    unsigned int function3:16;
-    unsigned int function2:16;
-    unsigned int function1:16;
-    unsigned int function0:3;
-#else
-    unsigned int function1:32;
-    unsigned int function0:19;
-#endif
-    unsigned int quiet:1;
-    unsigned int exponent: 11;
-    unsigned int sign : 1;
-  } nan;
-  struct 
-  {
-    unsigned long lsw;
-    unsigned long msw;
-  } parts;
-
-  long aslong[2];
-
-} __ieee_double_shape_type;
-
-#endif /* __IEEE_LITTLE_ENDIAN */
-
-#ifdef __IEEE_BIG_ENDIAN
-
-typedef union
-{
-  float value;
-  struct 
-  {
-    unsigned int sign : 1;
-    unsigned int exponent: 8;
-    unsigned int fraction0: 7;
-    unsigned int fraction1: 16;
-  } number;
-  struct 
-  {
-    unsigned int sign:1;
-    unsigned int exponent:8;
-    unsigned int quiet:1;
-    unsigned int function0:6;
-    unsigned int function1:16;
-  } nan;
-  long p1;
-  
-} __ieee_float_shape_type;
-
-#elif defined __IEEE_LITTLE_ENDIAN
-
-typedef union
-{
-  float value;
-  struct 
-  {
-    unsigned int fraction0: 7;
-    unsigned int fraction1: 16;
-    unsigned int exponent: 8;
-    unsigned int sign : 1;
-  } number;
-  struct 
-  {
-    unsigned int function1:16;
-    unsigned int function0:6;
-    unsigned int quiet:1;
-    unsigned int exponent:8;
-    unsigned int sign:1;
-  } nan;
-  long p1;
-  
-} __ieee_float_shape_type;
-
-#endif /* __IEEE_LITTLE_ENDIAN */
 
 #ifndef _LDBL_EQ_DBL
 

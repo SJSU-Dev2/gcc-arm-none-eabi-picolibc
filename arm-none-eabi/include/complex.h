@@ -1,7 +1,7 @@
 /* $NetBSD: complex.h,v 1.3 2010/09/15 16:11:30 christos Exp $ */
 
 /*
- * Written by Matthias Drochner.
+ * Copyright (c) 2010 Matthias Drochner.
  * Public domain.
  */
 
@@ -113,10 +113,12 @@ long double cimagl(long double complex);
 /* 7.3.9.3 The conj functions */
 double complex conj(double complex);
 float complex conjf(float complex);
+long double complex conjl(long double complex);
 
 /* 7.3.9.4 The cproj functions */
 double complex cproj(double complex);
 float complex cprojf(float complex);
+long double complex cprojl(long double complex);
 
 /* 7.3.9.5 The creal functions */
 double creal(double complex);
@@ -128,7 +130,7 @@ double complex clog10(double complex);
 float complex clog10f(float complex);
 #endif
 
-#if defined(__CYGWIN__)
+#if defined(__CYGWIN__) || defined(_LDBL_EQ_DBL)
 long double complex cacosl(long double complex);
 long double complex ccosl(long double complex);
 long double complex csinl(long double complex);
@@ -141,8 +143,6 @@ long double complex csinhl(long double complex);
 long double complex ctanhl(long double complex);
 long double complex cexpl(long double complex);
 long double complex cpowl(long double complex, long double complex);
-long double complex conjl(long double complex);
-long double complex cprojl(long double complex);
 #if __GNU_VISIBLE
 long double complex clog10l(long double complex);
 #endif

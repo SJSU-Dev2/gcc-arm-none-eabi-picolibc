@@ -1,3 +1,4 @@
+/* Copyright (c) 2002 Jeff Johnston  <jjohnstn@redhat.com> */
 #ifndef _LIBC_LIMITS_H_
 # define _LIBC_LIMITS_H_	1
 
@@ -129,6 +130,11 @@
 
 #if defined __GNUC__ && !defined _GCC_LIMITS_H_
 /* `_GCC_LIMITS_H_' is what GCC's file defines.  */
+#ifdef __clang__
+#ifndef __GLIBC_USE
+#define __GLIBC_USE(x) 1
+#endif
+#endif
 # include_next <limits.h>
 #endif /* __GNUC__ && !_GCC_LIMITS_H_ */
 
