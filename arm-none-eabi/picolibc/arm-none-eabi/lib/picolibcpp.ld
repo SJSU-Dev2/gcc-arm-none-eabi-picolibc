@@ -110,20 +110,20 @@ SECTIONS
 		PROVIDE_HIDDEN ( __fini_array_end = . );
 	} >flash AT>flash :text
 
-        /* additional sections when compiling with C++ exception support */
-	
-        .except : {
+	/* additional sections when compiling with C++ exception support */
+
+	.except : {
 		*(.gcc_except_table *.gcc_except_table.*)
 		KEEP (*(.eh_frame .eh_frame.*))
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
+		. = ALIGN(8);
+	} >flash AT>flash :text
 
-                . = ALIGN(8);
-
-        	PROVIDE(__exidx_start = .);
+	.except2 : {
+		PROVIDE(__exidx_start = .);
 		*(.ARM.exidx*)
-        	PROVIDE(__exidx_end = .);
-        } >flash AT>flash :text
-	
+		PROVIDE(__exidx_end = .);
+	} >flash AT>flash :text
 
 	/*
 	 * Data values which are preserved across reset
@@ -139,7 +139,7 @@ SECTIONS
 		*(.data .data.*)
 		*(.gnu.linkonce.d.*)
 
-                /* Need to pre-align so that the symbols come after padding */
+		/* Need to pre-align so that the symbols come after padding */
  		. = ALIGN(8);
 
 		PROVIDE( __global_pointer$ = . + 0x800 );
