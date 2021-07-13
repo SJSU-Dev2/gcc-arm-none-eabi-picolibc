@@ -1,9 +1,34 @@
+/*
+Copyright (c) 2001 Alexey Zelkin <phantom@FreeBSD.org>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
 #ifndef _WCHAR_H_
 #define _WCHAR_H_
 
 #include <_ansi.h>
 
-#include <sys/reent.h>
+#include <stdio.h>
 
 #define __need_size_t
 #define __need_wchar_t
@@ -17,21 +42,7 @@
 /* For __STDC_ISO_10646__ */
 #include <sys/features.h>
 
-/* typedef only __gnuc_va_list, used throughout the header */
-#define __need___va_list
 #include <stdarg.h>
-
-/* typedef va_list only when required */
-#if __POSIX_VISIBLE >= 200809 || __XSI_VISIBLE
-#ifdef __GNUC__
-#ifndef _VA_LIST_DEFINED
-typedef __gnuc_va_list va_list;
-#define _VA_LIST_DEFINED
-#endif
-#else /* !__GNUC__ */
-#include <stdarg.h>
-#endif
-#endif /* __POSIX_VISIBLE >= 200809 || __XSI_VISIBLE */
 
 #if __XSI_VISIBLE /* && __XSI_VISIBLE < 800 */ && !__GNU_VISIBLE
 #include <wctype.h>
@@ -70,7 +81,6 @@ typedef __gnuc_va_list va_list;
 _BEGIN_STD_C
 
 #if __POSIX_VISIBLE >= 200809 || _XSI_VISIBLE
-/* As in stdio.h, <sys/reent.h> defines __FILE. */
 #if !defined(__FILE_defined)
 typedef __FILE FILE;
 # define __FILE_defined
@@ -91,30 +101,20 @@ int	wctob (wint_t);
 size_t	mbrlen (const char *__restrict, size_t, mbstate_t *__restrict);
 size_t	mbrtowc (wchar_t *__restrict, const char *__restrict, size_t,
 						mbstate_t *__restrict);
-size_t	_mbrtowc_r (struct _reent *, wchar_t * , const char * , 
-			size_t, mbstate_t *);
 int	mbsinit (const mbstate_t *);
 #if __POSIX_VISIBLE >= 200809
 size_t	mbsnrtowcs (wchar_t *__restrict, const char **__restrict,
 				size_t, size_t, mbstate_t *__restrict);
 #endif
-size_t	_mbsnrtowcs_r (struct _reent *, wchar_t * , const char ** ,
-			size_t, size_t, mbstate_t *);
 size_t	mbsrtowcs (wchar_t *__restrict, const char **__restrict, size_t,
 				mbstate_t *__restrict);
-size_t	_mbsrtowcs_r (struct _reent *, wchar_t * , const char ** , size_t, mbstate_t *);
 size_t	wcrtomb (char *__restrict, wchar_t, mbstate_t *__restrict);
-size_t	_wcrtomb_r (struct _reent *, char * , wchar_t, mbstate_t *);
 #if __POSIX_VISIBLE >= 200809
 size_t	wcsnrtombs (char *__restrict, const wchar_t **__restrict,
 				size_t, size_t, mbstate_t *__restrict);
 #endif
-size_t	_wcsnrtombs_r (struct _reent *, char * , const wchar_t ** , 
-			size_t, size_t, mbstate_t *);
 size_t	wcsrtombs (char *__restrict, const wchar_t **__restrict,
 				size_t, mbstate_t *__restrict);
-size_t	_wcsrtombs_r (struct _reent *, char * , const wchar_t ** , 
-			size_t, mbstate_t *);
 #if __POSIX_VISIBLE >= 200809
 int	wcscasecmp (const wchar_t *, const wchar_t *);
 #endif
@@ -128,7 +128,6 @@ wchar_t	*wcpcpy (wchar_t *__restrict,
 				 const wchar_t *__restrict);
 wchar_t	*wcsdup (const wchar_t *) __malloc_like __result_use_check;
 #endif
-wchar_t	*_wcsdup_r (struct _reent *, const wchar_t * );
 size_t	wcscspn (const wchar_t *, const wchar_t *);
 size_t  wcsftime (wchar_t *__restrict, size_t,
 				const wchar_t *__restrict, const struct tm *__restrict);
@@ -160,11 +159,9 @@ wchar_t	*wcsstr (const wchar_t *__restrict,
 wchar_t	*wcstok (wchar_t *__restrict, const wchar_t *__restrict,
 				 wchar_t **__restrict);
 double wcstod (const wchar_t *__restrict, wchar_t **__restrict);
-double _wcstod_r (struct _reent *, const wchar_t *, wchar_t **);
 #if __ISO_C_VISIBLE >= 1999
 float wcstof (const wchar_t *__restrict, wchar_t **__restrict);
 #endif
-float _wcstof_r (struct _reent *, const wchar_t *, wchar_t **);
 #if __XSI_VISIBLE
 int	wcswidth (const wchar_t *, size_t);
 #endif
@@ -203,10 +200,6 @@ unsigned long wcstoul (const wchar_t *__restrict, wchar_t **__restrict,
 unsigned long long wcstoull (const wchar_t *__restrict,
 						   wchar_t **__restrict, int);
 #endif
-long    _wcstol_r (struct _reent *, const wchar_t *, wchar_t **, int);
-long long _wcstoll_r (struct _reent *, const wchar_t *, wchar_t **, int);
-unsigned long _wcstoul_r (struct _reent *, const wchar_t *, wchar_t **, int);
-unsigned long long _wcstoull_r (struct _reent *, const wchar_t *, wchar_t **, int);
 #if __ISO_C_VISIBLE >= 1999
 long double wcstold (const wchar_t *, wchar_t **);
 #endif
@@ -237,6 +230,10 @@ wint_t putwc (wchar_t, __FILE *);
 wint_t putwchar (wchar_t);
 wint_t ungetwc (wint_t wc, __FILE *);
 
+#ifndef TINY_STDIO
+
+struct _reent;
+
 wint_t _fgetwc_r (struct _reent *, __FILE *);
 wint_t _fgetwc_unlocked_r (struct _reent *, __FILE *);
 wchar_t *_fgetws_r (struct _reent *, wchar_t *, int, __FILE *);
@@ -248,13 +245,31 @@ int _fputws_unlocked_r (struct _reent *, const wchar_t *, __FILE *);
 int _fwide_r (struct _reent *, __FILE *, int);
 wint_t _getwc_r (struct _reent *, __FILE *);
 wint_t _getwc_unlocked_r (struct _reent *, __FILE *);
-wint_t _getwchar_r (struct _reent *ptr);
-wint_t _getwchar_unlocked_r (struct _reent *ptr);
+wint_t _getwchar_r (struct _reent *);
+wint_t _getwchar_unlocked_r (struct _reent *);
 wint_t _putwc_r (struct _reent *, wchar_t, __FILE *);
 wint_t _putwc_unlocked_r (struct _reent *, wchar_t, __FILE *);
 wint_t _putwchar_r (struct _reent *, wchar_t);
 wint_t _putwchar_unlocked_r (struct _reent *, wchar_t);
 wint_t _ungetwc_r (struct _reent *, wint_t wc, __FILE *);
+
+int	_fwprintf_r (struct _reent *, __FILE *, const wchar_t *, ...);
+int	_swprintf_r (struct _reent *, wchar_t *, size_t, const wchar_t *, ...);
+int	_vfwprintf_r (struct _reent *, __FILE *, const wchar_t *, va_list);
+int	_vswprintf_r (struct _reent *, wchar_t *, size_t, const wchar_t *, va_list);
+int	_vwprintf_r (struct _reent *, const wchar_t *, va_list);
+int	_wprintf_r (struct _reent *, const wchar_t *, ...);
+
+int	_fwscanf_r (struct _reent *, __FILE *, const wchar_t *, ...);
+int	_swscanf_r (struct _reent *, const wchar_t *, const wchar_t *, ...);
+int	_vfwscanf_r (struct _reent *, __FILE *, const wchar_t *, va_list);
+int	_vswscanf_r (struct _reent *, const wchar_t *, const wchar_t *, va_list);
+int	_vwscanf_r (struct _reent *, const wchar_t *, va_list);
+int	_wscanf_r (struct _reent *, const wchar_t *, ...);
+
+__FILE *_open_wmemstream_r (struct _reent *, wchar_t **, size_t *);
+
+#endif
 
 #if __GNU_VISIBLE
 wint_t fgetwc_unlocked (__FILE *);
@@ -270,64 +285,41 @@ wint_t putwchar_unlocked (wchar_t);
 #if __POSIX_VISIBLE >= 200809
 __FILE *open_wmemstream (wchar_t **, size_t *);
 #endif
-__FILE *_open_wmemstream_r (struct _reent *, wchar_t **, size_t *);
-
-#ifndef __VALIST
-#ifdef __GNUC__
-#define __VALIST __gnuc_va_list
-#else
-#define __VALIST char*
-#endif
-#endif
 
 #if __ISO_C_VISIBLE >= 1999 || __XSI_VISIBLE >= 500
 int	fwprintf (__FILE *__restrict, const wchar_t *__restrict, ...);
 int	swprintf (wchar_t *__restrict, size_t,
 			const wchar_t *__restrict, ...);
 int	vfwprintf (__FILE *__restrict, const wchar_t *__restrict,
-			__VALIST);
+			va_list);
 int	vswprintf (wchar_t *__restrict, size_t,
-			const wchar_t *__restrict, __VALIST);
-int	vwprintf (const wchar_t *__restrict, __VALIST);
+			const wchar_t *__restrict, va_list);
+int	vwprintf (const wchar_t *__restrict, va_list);
 int	wprintf (const wchar_t *__restrict, ...);
 #endif
-
-int	_fwprintf_r (struct _reent *, __FILE *, const wchar_t *, ...);
-int	_swprintf_r (struct _reent *, wchar_t *, size_t, const wchar_t *, ...);
-int	_vfwprintf_r (struct _reent *, __FILE *, const wchar_t *, __VALIST);
-int	_vswprintf_r (struct _reent *, wchar_t *, size_t, const wchar_t *, __VALIST);
-int	_vwprintf_r (struct _reent *, const wchar_t *, __VALIST);
-int	_wprintf_r (struct _reent *, const wchar_t *, ...);
 
 #if __ISO_C_VISIBLE >= 1999 || __XSI_VISIBLE >= 500
 int	fwscanf (__FILE *__restrict, const wchar_t *__restrict, ...);
 int	swscanf (const wchar_t *__restrict,
 			const wchar_t *__restrict, ...);
 int	vfwscanf (__FILE *__restrict, const wchar_t *__restrict,
-			__VALIST);
+			va_list);
 int	vswscanf (const wchar_t *__restrict, const wchar_t *__restrict,
-			__VALIST);
-int	vwscanf (const wchar_t *__restrict, __VALIST);
+			va_list);
+int	vwscanf (const wchar_t *__restrict, va_list);
 int	wscanf (const wchar_t *__restrict, ...);
 #endif
 
-int	_fwscanf_r (struct _reent *, __FILE *, const wchar_t *, ...);
-int	_swscanf_r (struct _reent *, const wchar_t *, const wchar_t *, ...);
-int	_vfwscanf_r (struct _reent *, __FILE *, const wchar_t *, __VALIST);
-int	_vswscanf_r (struct _reent *, const wchar_t *, const wchar_t *, __VALIST);
-int	_vwscanf_r (struct _reent *, const wchar_t *, __VALIST);
-int	_wscanf_r (struct _reent *, const wchar_t *, ...);
-
 #define getwc(fp)	fgetwc(fp)
 #define putwc(wc,fp)	fputwc((wc), (fp))
-#define getwchar()	fgetwc(_REENT->_stdin)
-#define putwchar(wc)	fputwc((wc), _REENT->_stdout)
+#define getwchar()	fgetwc(stdin)
+#define putwchar(wc)	fputwc((wc), stdout)
 
 #if __GNU_VISIBLE
 #define getwc_unlocked(fp)	fgetwc_unlocked(fp)
 #define putwc_unlocked(wc,fp)	fputwc_unlocked((wc), (fp))
-#define getwchar_unlocked()	fgetwc_unlocked(_REENT->_stdin)
-#define putwchar_unlocked(wc)	fputwc_unlocked((wc), _REENT->_stdout)
+#define getwchar_unlocked()	fgetwc_unlocked(stdin)
+#define putwchar_unlocked(wc)	fputwc_unlocked((wc), stdout)
 #endif
 
 _END_STD_C

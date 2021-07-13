@@ -1,8 +1,38 @@
+/*
+Copyright (c) 1982, 1986, 1993
+The Regents of the University of California.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the University nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
 #ifndef __SYS_CONFIG_H__
 #define __SYS_CONFIG_H__
 
 #include <machine/ieeefp.h>  /* floating point macros */
 #include <sys/features.h>	/* POSIX defs */
+#include <float.h>
+#include <newlib.h>
 
 #ifdef __aarch64__
 #define MALLOC_ALIGNMENT 16
@@ -21,7 +51,7 @@
 #endif
 
 /* 16 bit integer machines */
-#if defined(__Z8001__) || defined(__Z8002__) || defined(__H8500__) || defined(__W65__) || defined (__mn10200__) || defined (__AVR__)
+#if defined(__Z8001__) || defined(__Z8002__) || defined(__H8500__) || defined(__W65__) || defined (__mn10200__) || defined (__AVR__) || defined (__MSP430__)
 
 #undef INT_MAX
 #undef UINT_MAX
@@ -97,7 +127,9 @@
 #define __DYNAMIC_REENT__
 #define HAVE_GETDATE
 #define _READ_WRITE_RETURN_TYPE _ssize_t
+#ifndef __LARGE64_FILES
 #define __LARGE64_FILES 1
+#endif
 /* we use some glibc header files so turn on glibc large file feature */
 #define _LARGEFILE64_SOURCE 1
 #endif
@@ -162,7 +194,7 @@
 #define __SMALL_BITFIELDS
 
 #ifdef __MSP430X_LARGE__
-#define _POINTER_INT long
+#define _POINTER_INT __int20
 #else
 #define _POINTER_INT int
 #endif
@@ -273,6 +305,12 @@
 #endif
 #endif
 
+#ifdef NEWLIB_TLS
+#define NEWLIB_THREAD_LOCAL __thread
+#else
+#define NEWLIB_THREAD_LOCAL
+#endif
+
 /* See if small reent asked for at configuration time and
    is not chosen by the platform by default.  */
 #ifdef _WANT_REENT_SMALL
@@ -299,6 +337,15 @@
 #ifdef _MB_EXTENDED_CHARSETS_ALL
 #define _MB_EXTENDED_CHARSETS_ISO 1
 #define _MB_EXTENDED_CHARSETS_WINDOWS 1
+#endif
+
+/* Figure out if long double is the same size as double. If the system
+ * doesn't provide long double, then those values will be undefined
+ * and cpp will substitute 0 for them in the test
+ */
+#if LDBL_MANT_DIG == DBL_MANT_DIG && LDBL_MIN_EXP == DBL_MIN_EXP && \
+    LDBL_MAX_EXP == DBL_MAX_EXP
+#define _LDBL_EQ_DBL
 #endif
 
 #endif /* __SYS_CONFIG_H__ */

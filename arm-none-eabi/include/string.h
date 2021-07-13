@@ -1,4 +1,37 @@
 /*
+Copyright (c) 1991, 1993
+The Regents of the University of California.  All rights reserved.
+c) UNIX System Laboratories, Inc.
+All or some portions of this file are derived from material licensed
+to the University of California by American Telephone and Telegraph
+Co. or Unix System Laboratories, Inc. and are reproduced herein with
+the permission of UNIX System Laboratories, Inc.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the University nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
+/*
  * string.h
  *
  * Definitions for memory and string functions.
@@ -8,7 +41,6 @@
 #define	_STRING_H_
 
 #include "_ansi.h"
-#include <sys/reent.h>
 #include <sys/cdefs.h>
 #include <sys/features.h>
 
@@ -83,11 +115,9 @@ char 	*strchrnul (const char *, int);
 #if __MISC_VISIBLE || __POSIX_VISIBLE >= 200809 || __XSI_VISIBLE >= 4
 char 	*strdup (const char *) __malloc_like __result_use_check;
 #endif
-char 	*_strdup_r (struct _reent *, const char *);
 #if __POSIX_VISIBLE >= 200809
 char 	*strndup (const char *, size_t) __malloc_like __result_use_check;
 #endif
-char 	*_strndup_r (struct _reent *, const char *, size_t);
 
 /* There are two common strerror_r variants.  If you request
    _GNU_SOURCE, you get the GNU version; otherwise you get the POSIX
@@ -109,7 +139,7 @@ int	__xpg_strerror_r (int, char *, size_t);
 #endif
 
 /* Reentrant version of strerror.  */
-char *	_strerror_r (struct _reent *, int, int, int *);
+char *	_strerror_r (int, int, int *);
 
 #if __BSD_VISIBLE
 size_t	strlcat (char *, const char *, size_t);
@@ -168,8 +198,12 @@ int	 strverscmp (const char *, const char *);
    this also implies that the POSIX version is used in this case.  That's made
    sure here. */
 #if __GNU_VISIBLE && !defined(basename)
-# define basename basename
+# ifdef __ASMNAME
+#  define basename basename
 char	*__nonnull ((1)) basename (const char *) __asm__(__ASMNAME("__gnu_basename"));
+# else
+#  define basename(s) (__gnu_basename(s))
+# endif
 #endif
 
 #include <sys/string.h>

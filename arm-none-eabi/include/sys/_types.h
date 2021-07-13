@@ -1,3 +1,31 @@
+/*
+Copyright (c) 1982, 1986, 1993
+The Regents of the University of California.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the University nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
 /* ANSI C namespace clean utility typedefs */
 
 /* This file defines various typedefs needed by the system calls that support
@@ -53,14 +81,26 @@ typedef int __pid_t;
 #endif
 
 #ifndef __machine_dev_t_defined
+#ifdef linux
+typedef __uint64_t __dev_t;
+#else
 typedef short __dev_t;
+#endif
 #endif
 
 #ifndef __machine_uid_t_defined
+#ifdef linux
+typedef __uint32_t __uid_t;
+#else
 typedef unsigned short __uid_t;
 #endif
+#endif
 #ifndef __machine_gid_t_defined
+#ifdef linux
+typedef __uint32_t __gid_t;
+#else
 typedef unsigned short __gid_t;
+#endif
 #endif
 
 #ifndef __machine_id_t_defined
@@ -69,7 +109,7 @@ typedef __uint32_t __id_t;
 
 #ifndef __machine_ino_t_defined
 #if (defined(__i386__) && (defined(GO32) || defined(__MSDOS__))) || \
-    defined(__sparc__) || defined(__SPU__)
+	defined(__sparc__) || defined(__SPU__) || defined(linux)
 typedef unsigned long __ino_t;
 #else
 typedef unsigned short __ino_t;
@@ -209,16 +249,5 @@ typedef	int		__nl_item;
 typedef	unsigned short	__nlink_t;
 typedef	long		__suseconds_t;	/* microseconds (signed) */
 typedef	unsigned long	__useconds_t;	/* microseconds (unsigned) */
-
-/*
- * Must be identical to the __GNUCLIKE_BUILTIN_VAALIST definition in
- * <sys/cdefs.h>.  The <sys/cdefs.h> must not be included here to avoid cyclic
- * header dependencies.
- */
-#if __GNUC_MINOR__ > 95 || __GNUC__ >= 3
-typedef	__builtin_va_list	__va_list;
-#else
-typedef	char *			__va_list;
-#endif
 
 #endif	/* _SYS__TYPES_H */

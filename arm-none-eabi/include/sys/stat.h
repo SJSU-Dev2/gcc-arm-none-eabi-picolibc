@@ -1,3 +1,31 @@
+/*
+Copyright (c) 1982, 1986, 1993
+The Regents of the University of California.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the University nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+ */
 #ifndef	_SYS_STAT_H
 #define	_SYS_STAT_H
 
@@ -32,8 +60,35 @@ struct	stat
   nlink_t	st_nlink;
   uid_t		st_uid;
   gid_t		st_gid;
+#if defined(linux) && defined(__x86_64__)
+    int __pad0;
+#endif
   dev_t		st_rdev;
+#if defined(linux) && !defined(__x86_64__)
+    unsigned short int __pad2;
+#endif
   off_t		st_size;
+#if defined(linux)
+  blksize_t	st_blksize;
+  blkcnt_t	st_blocks;
+  struct timespec st_atim;
+  struct timespec st_mtim;
+  struct timespec st_ctim;
+#define st_atime st_atim.tv_sec      /* Backward compatibility */
+#define st_mtime st_mtim.tv_sec
+#define st_ctime st_ctim.tv_sec
+#if defined(linux) && defined(__x86_64__)
+    __uint64_t __glibc_reserved[3];
+#endif
+#else
+#if defined(__rtems__)
+  struct timespec st_atim;
+  struct timespec st_mtim;
+  struct timespec st_ctim;
+  blksize_t     st_blksize;
+  blkcnt_t	st_blocks;
+#else
+  /* SysV/sco doesn't have the rest... But Solaris, eabi does.  */
 #if defined(__svr4__) && !defined(__PPC__) && !defined(__sun__)
   time_t	st_atime;
   time_t	st_mtime;
@@ -48,9 +103,11 @@ struct	stat
   long		st_spare4[2];
 #endif
 #endif
+#endif
+#endif
 };
 
-#if !(defined(__svr4__) && !defined(__PPC__) && !defined(__sun__)) && !defined(__cris__)
+#if !(defined(__svr4__) && !defined(__PPC__) && !defined(__sun__))
 #define st_atime st_atim.tv_sec
 #define st_ctime st_ctim.tv_sec
 #define st_mtime st_mtim.tv_sec
@@ -153,10 +210,10 @@ int	fstatat (int, const char *__restrict , struct stat *__restrict, int);
 int	mkdirat (int, const char *, mode_t);
 int	mkfifoat (int, const char *, mode_t);
 int	mknodat (int, const char *, mode_t, dev_t);
-int	utimensat (int, const char *, const struct timespec *, int);
+int	utimensat (int, const char *, const struct timespec [2], int);
 #endif
 #if __POSIX_VISIBLE >= 200809 && !defined(__INSIDE_CYGWIN__)
-int	futimens (int, const struct timespec *);
+int	futimens (int, const struct timespec [2]);
 #endif
 
 /* Provide prototypes for most of the _<systemcall> names that are

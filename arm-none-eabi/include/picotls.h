@@ -32,4 +32,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <picolibc.h>
+
+#ifndef _PICOTLS_H_
+#define _PICOTLS_H_
+
+#ifdef PICOLIBC_TLS
+
+#include <sys/types.h>
+
+extern char __tls_size[];
+
+static inline size_t _tls_size(void) { return (size_t) (uintptr_t) __tls_size; }
+
+/*
+ * Initialize a TLS block, copying the data segment from flash and
+ * zeroing the BSS segment.
+ */
+void
+_init_tls(void *tls);
+
+/* Set the TLS pointer to the specific block */
+void
+_set_tls(void *tls);
+#endif
+
+#endif /* _PICOTLS_H_ */
