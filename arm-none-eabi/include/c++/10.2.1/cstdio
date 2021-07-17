@@ -176,7 +176,7 @@ namespace __gnu_cxx
   using ::vfscanf;
   using ::vscanf;
   using ::vsnprintf;
-  using ::vsscanf;
+  // using ::vsscanf;
 #endif
 } // namespace __gnu_cxx
 
@@ -186,7 +186,7 @@ namespace std
   using ::__gnu_cxx::vfscanf;
   using ::__gnu_cxx::vscanf;
   using ::__gnu_cxx::vsnprintf;
-  using ::__gnu_cxx::vsscanf;
+  // using ::__gnu_cxx::vsscanf;
 } // namespace std
 
 #endif // _GLIBCXX_USE_C99_STDIO
